@@ -1,0 +1,130 @@
+version: '3.7'
+#cd ~/softwares/docker && mkdir {mongodb,mysql,postgresql,rabbitmq,redis}
+
+services:
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        environment:
+            ACCEPT_EULA: Y
+            SA_PASSWORD: SqlServer!
+            MSSQL_PID: Developer
+        ports:
+            - "41434:1433"
+        volumes:
+            - ~/softwares/docker/sqlserver/SQLSat/SQLServer:/var/opt/mssql
+        networks:
+            - sqlsat
+
+    postgres:
+        image: postgres
+        environment:
+            POSTGRES_PASSWORD: "Postgres2020!"
+        ports:
+            - "15432:5432"
+        volumes:
+            - ~/softwares/docker/postgresql:/var/lib/postgresql/data
+        networks:
+            - sqlsat
+
+    mysql:
+        image: mysql
+        environment:
+            MYSQL_DATABASE: 'database'
+            MYSQL_USER: 'root'
+            MYSQL_PASSWORD: 'root'
+            MYSQL_ROOT_PASSWORD: 'root'
+        ports:
+            - "13306:3306"
+        expose:
+            - "3306"
+        volumes:
+            - ~/softwares/docker/mysql:/var/lib/mysql
+    mysql57:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: 'database'
+            MYSQL_USER: 'root'
+            MYSQL_PASSWORD: 'root'
+            MYSQL_ROOT_PASSWORD: 'root'
+        ports:
+            - "13307:3306"
+        expose:
+            - "3306"
+        volumes:
+            - ~/softwares/docker/mysql57:/var/lib/mysql
+
+
+    # pgadmin:
+    #     image: dpage/pgadmin4
+    #     environment:
+    #         PGADMIN_DEFAULT_EMAIL: "renatogroff@yahoo.com.br"
+    #         PGADMIN_DEFAULT_PASSWORD: "PgAdmin2020!"
+    #     ports:
+    #         - "15433:80"
+    #     depends_on:
+    #         - postgres
+    #     networks:
+    #         - sqlsat
+
+    redis:
+        image: redis:alpine
+        volumes:
+            - ~/softwares/docker/redis:/var/lib/redis
+        #command: redis-server --requirepass Redis2020!
+        #environment:
+        #    - REDIS_HOST=redis
+        ports:
+            - "6378:6379"
+            - "26378:26379"
+        networks:
+            - sqlsat
+
+    # mongo-express:
+    #     image: mongo-express
+    #     ports:
+    #         - 19081:8081
+    #     environment:
+    #         ME_CONFIG_BASICAUTH_USERNAME: renatogroffe
+    #         ME_CONFIG_BASICAUTH_PASSWORD: MongoExpress2020!
+    #         ME_CONFIG_MONGODB_PORT: 27017
+    #         ME_CONFIG_MONGODB_ADMINUSERNAME: root
+    #         ME_CONFIG_MONGODB_ADMINPASSWORD: MongoDB2020!
+    #     links:
+    #         - mongo
+    #     networks:
+    #         - sqlsat
+
+    mongo:
+        image: mongo
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: MongoDB2020!
+        ports:
+            - "27017:27017"
+        volumes:
+            - ~/softwares/docker/mongodb:/data/db
+        networks:
+            - sqlsat
+
+
+    rabbitmq-server:
+        image: rabbitmq:3-management-alpine
+        volumes:
+            - ~/softwares/docker/rabbitmq:/home/rabbitmq
+            - ~/softwares/docker/rabbitmq/var/lib/rabbitmq:/var/lib/rabbitmq
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=admin
+        ports:
+            - "5673:5672"
+            - "15673:15672"
+        #command: /home/rabbitmq3.6/startup.sh
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "50m"
+        #restart: always
+
+networks:
+        sqlsat:
+            driver: bridge
